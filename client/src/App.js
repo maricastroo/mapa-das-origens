@@ -1,26 +1,36 @@
 //aqui configura as rotas do front!!!
 
-import logo from './logo.svg';
-import './App.css';
 
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Flex } from '@chakra-ui/react';
+
+
+import Sidebar from './components/layout/Sidebar.jsx';
+import MapPage from './pages/MapPage.jsx';
+import AcervoPage from './pages/AcervoPage.jsx'; 
+import PerfilPage from './pages/PerfilPage.jsx';
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Flex minH="100vh"> 
+        
+        {/* barra do lado */}
+        <Sidebar />
+        
+        {/* conteudo principa; */}
+        <Flex as="main" flex="1">
+          <Routes>
+            {/* links da barra */}
+            <Route path="/" element={<MapPage />} /> 
+            <Route path="/mapa" element={<MapPage />} />
+            <Route path="/acervo" element={<AcervoPage />} />
+            <Route path="/perfil" element={<PerfilPage />} />
+          </Routes>
+        </Flex>
+        
+      </Flex>
+    </Router>
   );
 }
 
