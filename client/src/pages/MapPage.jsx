@@ -1,12 +1,39 @@
 // src/pages/MapPage.jsx
 import React from 'react';
 import { Box, Flex, Image, Text } from '@chakra-ui/react';
-
-
-import Logo from '../assets/origens.png'; 
+//Imports do Mapa 
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css'; // css lealeft (mapa)
+import Logo from '../assets/mapadasorigens.png'; 
 import ParchmentBg from '../assets/Acervo.png'; 
 
+// corrige um bug comum onde os ícones do "pin" não aparecem.
+import L from 'leaflet';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
+
+
 function MapPage() {
+  
+  // coordenadas centrais do Paraná
+  const paranaPosition = [-24.8919, -51.5515];
+
+  // coordenadas dos limites do Paraná
+  const paranaBounds = [
+    [-27.0, -55.0], // Ponto Sudoeste (SW)
+    [-22.0, -48.0], // Ponto Nordeste (NE)
+  ];
+
+
   return (
     <Flex 
       flex="1" 
@@ -18,8 +45,6 @@ function MapPage() {
       backgroundImage={ParchmentBg}
       backgroundSize="cover"
       backgroundPosition="center"
-     
-      
       direction="column"
     >
       {/* logo */}
@@ -32,22 +57,39 @@ function MapPage() {
         <Image src={Logo} alt="Mapa das Origens Logo" w="220px" />
       </Flex>
 
-      {/* mapa */}
+      {/* MAPA */}
       <Box
         flex="1"
-        bg="#FFEFDC" // aqui é pq por enquano nao temos o mapa
-        borderRadius="md"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        minH="60vh"
+        borderRadius="md" 
+        minH="60vh" 
         color="gray.600"
-        // adicionar o mapa aqui :)
+        overflow="hidden"
       >
-        <Text fontSize="2xl" fontWeight="Belezza" bg="whiteAlpha.700" p={4} borderRadius="md">
-          (mapa akirrrr)
-        </Text>
-      </Box>      
+        <MapContainer 
+          center={paranaPosition} // centraliza no Paraná
+          zoom={7} //zoom para mostrar o estado
+          style={{ height: '100%', width: '100%', minHeight: '60vh' }}
+          
+          maxBounds={paranaBounds} //limites do mapa
+          minZoom={7}// impede o zoom fora
+
+          // isso é como se fosse uma parede, sempre que vai para fora da area, ele volta
+          maxBoundsViscosity={1.0}
+        >
+          {/* Camada de "pele" do mapa */}
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          
+          {/* um exemplo de pin */}
+          <Marker position={[-25.4284, -49.2733]}> 
+            <Popup>
+              <b>Curitiba</b> <br /> Este é um "Pin" de exemplo.
+            </Popup>
+          </Marker>
+        </MapContainer>
+      </Box>
     </Flex>
   );
 }

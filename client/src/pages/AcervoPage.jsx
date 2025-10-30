@@ -2,7 +2,7 @@
 import React from 'react';
 import {
   Flex,
-  Box, // 1. IMPORTAR O 'Box'
+  Box, 
   Image,
   Text,
   Heading,
