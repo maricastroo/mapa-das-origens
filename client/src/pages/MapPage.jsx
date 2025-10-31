@@ -54,54 +54,45 @@ function MapPage() {
   // estilizacao 
   function geoJsonStyle(feature) {
     return {
-      fillColor: '#FFEFDC', // Cor de preenchimento (o creme da sua sidebar)
-      weight: 1,           // Largura da borda
+      fillColor: '#FFEFDC', 
+      weight: 1,
       opacity: 1,
-      color: '#3A2E39',     // Cor da borda (o preto/marrom)
+      color: '#3A2E39',
       fillOpacity: 1
     };
   }
 
-  // --- MUDANÇA 1: O NOME APARECE AO PASSAR O MOUSE ---
+  // nome aparecer quando passar mouse
   function onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.name) {
       // Trocamos 'bindPopup' por 'bindTooltip'
       layer.bindTooltip(
         feature.properties.name, 
         {
-          // A opção "permanent: true" foi REMOVIDA.
-          // Agora o nome só aparece no hover (ao passar o mouse).
-          direction: 'center',
-          sticky: true, // Faz o tooltip "grudar" no mouse
-          className: 'map-label' // Damos uma classe CSS para estilizar
+          sticky: true, 
+          className: 'map-label' 
         }
       );
     }
   }
-  // --- FIM DA MUDANÇA 1 ---
 
   return (
     <Flex 
-      flex="1" 
-      
-      // --- MUDANÇA 2: REMOVIDO PADDINGS da página ---
-      // pt={4}, pb={8}, px={8} foram removidos
-      // para o mapa "grudar" na borda e parecer "cheio"
-      
+      flex="1"       
       //imagem do fundo
       backgroundImage={ParchmentBg}
       backgroundSize="cover"
       backgroundPosition="center"
       direction="column"
-      position="relative" // Posição relativa para o logo
+      position="relative" // posição relativa para o logo
     >
       {/* logo */}
       <Flex 
-        // Posição absoluta para "flutuar" sobre o mapa
+        // posição absoluta para flutuar sobre o mapa
         position="absolute"
-        top="16px"  // Equivalente ao pt={4}
-        right="12px" // Equivalente ao mr={-3} + px={8}
-        zIndex={1000} // Garante que o logo fique CIMA do mapa
+        top="16px"
+        right="12px"
+        zIndex={1000}
       >
         <Image src={Logo} alt="Mapa das Origens Logo" w="220px" />
       </Flex>
@@ -109,8 +100,7 @@ function MapPage() {
       {/* MAPA */}
       <Box
         flex="1"
-        // borderRadius="md" (Removido para o mapa ficar "cheio")
-        minH="100vh" // Ocupa 100% da altura da tela
+        minH="100vh" // ocupa tela toda
         color="gray.600"
         overflow="hidden"
         bg="transparent" 
@@ -122,7 +112,7 @@ function MapPage() {
           style={{ 
             height: '100%', 
             width: '100%', 
-            minHeight: '100vh', // Ocupa 100% da altura
+            minHeight: '100vh', // ocupa toda a altura
             backgroundColor: 'transparent' 
           }}
           zoomControl={false}
