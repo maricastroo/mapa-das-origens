@@ -11,7 +11,7 @@ Projeto de mapa interativo e acervo digital para a cultura dos povos originário
 
 ---
 
-## 🚀 Como Rodar
+## Como Rodar
 
 Este projeto exige dois terminais rodando ao mesmo tempo.
 
@@ -28,4 +28,4 @@ Este projeto exige dois terminais rodando ao mesmo tempo.
 2.  `cd client`
 3.  `npm install` (apenas na primeira vez)
 4.  `npm start`
-    * (Abre `http://localhost:3001` no navegador)
+    * (Abra `http://localhost:3001` no navegador)
