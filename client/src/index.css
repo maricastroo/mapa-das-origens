@@ -11,3 +11,42 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Estiliza a etiqueta (tooltip) que aparece no hover */
+.map-label {
+  background-color: transparent !important; /* Tira o fundo branco */
+  border: none !important;                  /* Tira a borda */
+  box-shadow: none !important;             /* Tira a sombra */
+  
+  color: #3A2E39;     /* Cor do texto (a mesma da borda do mapa) */
+  font-family: serif;  /* Fonte serifada */
+  font-weight: bold;   /* Deixa mais fácil de ler */
+  font-size: 14px;     /* Tamanho da fonte */
+  
+  /* Isso remove a "setinha" do tooltip */
+  --leaflet-tooltip-arrow-width: 0px; 
+}
+
+/* 2. Estilo para as ETIQUETAS FIXAS (Londrina, Maringá, etc.) */
+.city-label-permanent {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  font-family: serif;
+  font-weight: bold;
+  font-size: 14px;
+  color: #3A2E39; /* Cor do texto */
+  
+  /* Sombra de texto para ajudar na leitura sobre as bordas */
+  text-shadow: 
+    0px 0px 3px white,
+    0px 0px 3px white,
+    0px 0px 3px white;
+}
+
+/* 3. CSS para limpar a "caixa" do ícone de etiqueta fixa */
+.leaflet-marker-icon.city-label-permanent {
+  margin: 0 !important;
+  padding: 0 !important;
+}
