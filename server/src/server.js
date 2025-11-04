@@ -4,6 +4,9 @@ const express = require('express');
 const cors = require('cors'); // permite que o back se comunique com o front
 require('dotenv').config(); // carrega variáveis de ambiente do arquivo .env
 
+//para "ligar" o banco de dados
+require('./database');
+
 //⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
 // --importar as rotas aqui--
@@ -28,7 +31,7 @@ app.use(express.json()); // permite que o express entenda JSON no corpo das requ
 //⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
 app.get('/', (req, res) => {
-    res.send('API Mapa das Origens está funcionando!');
+    res.send('Esta porra esta rodando!');
 });
 
 const PORT = process.env.PORT || 3000; // porta que o servidor irá rodar
@@ -36,6 +39,8 @@ const PORT = process.env.PORT || 3000; // porta que o servidor irá rodar
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`); 
 });
+
+
 
 
 

@@ -12,7 +12,7 @@ code {
     monospace;
 }
 
-/* Estiliza a etiqueta (tooltip) que aparece no hover */
+/* estiliza a etiqueta (tooltip) que aparece no hover */
 .map-label {
   background-color: transparent !important; /* Tira o fundo branco */
   border: none !important;                  /* Tira a borda */

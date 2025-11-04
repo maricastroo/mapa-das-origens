@@ -11,6 +11,25 @@ Projeto de mapa interativo e acervo digital para a cultura dos povos originário
 
 ---
 
+## Pastas
+
+### FrontEnd
+
+* **--> client/src/App.js** Configuração das rotas do frontend
+* **--> client/src/index.css** A parte de estilização dos nomes do mapa estão lá
+* **--> client/src/components** Toda a parte relacionada a sidebar (ela é fixa)
+* **--> client/src/pages** Toda a parte relacionada as páginas (abas diferentes)
+* **--> client/src/assets** Toda a parte relacionada a mídia
+
+###  BackEnd
+
+* **--> server/src/config/database.js** Fica a configuração do banco de dados (senha, user etc..)
+* **--> server/src/models** Fica as tabelas do banco 
+* **--> server/src/config/index.js** Le as configurações 
+
+---
+
+
 ## Como Rodar
 
 Este projeto exige dois terminais rodando ao mesmo tempo.
