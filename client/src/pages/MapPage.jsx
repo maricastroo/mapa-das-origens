@@ -1,8 +1,29 @@
 //pagina do mapa
 
-import React, { useState, useEffect } from 'react'; 
-import { Box, Flex, Image, Text } from '@chakra-ui/react';
-import { MapContainer, GeoJSON, Marker, Popup } from 'react-leaflet'; 
+import React, { useState, useEffect } from 'react';
+import { 
+  Box, 
+  Flex, 
+  Image, 
+  Text,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Button,
+  FormControl,
+  FormLabel,
+  Heading,
+  Input,
+  Textarea,
+  Link,
+  Divider 
+} from '@chakra-ui/react';
+import { MapContainer, GeoJSON, Marker, Popup, useMapEvents, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css'; // css lealeft (mapa)
 import Logo from '../assets/mapadasorigens.png'; 
 import ParchmentBg from '../assets/Acervo.png'; 
@@ -10,17 +31,15 @@ import axios from 'axios'; // para design do mapa
 
 // corrige um bug comum onde os ícones do "pin" não aparecem.
 import L from 'leaflet';
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+// (o bloco 'DefaultIcon = L.icon(...)' foi removido daqui)
+
+// este é o ícone do pin customizado (um círculo)
+const customPinIcon = L.divIcon({
+  className: 'custom-pin-icon', // a classe CSS que vamos estilizar
+  iconSize: [20, 20], // o tamanho do ícone
+  iconAnchor: [10, 10] // o ponto de âncora (centro)
 });
-L.Marker.prototype.options.icon = DefaultIcon;
-
 
 
 function MapPage() {
@@ -36,6 +55,29 @@ function MapPage() {
 
   // para guardar os estados do geojson
   const [geoData, setGeoData] = useState(null);
+
+  // estados para os modais
+  const { 
+    isOpen: isAddOpen, 
+    onOpen: onAddOpen, 
+    onClose: onAddClose 
+  } = useDisclosure();
+  const { 
+    isOpen: isDetailsOpen, 
+    onOpen: onDetailsOpen, 
+    onClose: onDetailsClose 
+  } = useDisclosure();
+  
+  // guarda qual pin foi selecionado para mostrar os detalhes
+  const [selectedPin, setSelectedPin] = useState(null);
+
+  // estados dos pins e formulário
+  const [pins, setPins] = useState([]); 
+  const [newPinLocation, setNewPinLocation] = useState(null);
+  const [nome, setNome] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [midiaFile, setMidiaFile] = useState(null); // o arquivo em si
+
 
   // busca o geojson quando o componente carrega
   useEffect(() => {
@@ -65,7 +107,6 @@ function MapPage() {
   // nome aparecer quando passar mouse
   function onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.name) {
-      // Trocamos 'bindPopup' por 'bindTooltip'
       layer.bindTooltip(
         feature.properties.name, 
         {
@@ -76,19 +117,66 @@ function MapPage() {
     }
   }
 
+  // "ouvinte" de cliques no mapa
+  function MapClickHandler() {
+    useMapEvents({
+      click(e) {
+        // salva as coordenadas do clique
+        setNewPinLocation(e.latlng);
+        onAddOpen(); // abre o modal de adicionar
+      },
+    });
+    return null; 
+  }
+  
+  // função para Salvar o Pin 
+  const handleSavePin = () => {
+    
+    let fileUrl = null;
+    let fileType = null;
+    if (midiaFile) {
+      fileUrl = URL.createObjectURL(midiaFile); 
+      fileType = midiaFile.type; 
+    }
+
+    const newPin = {
+          id: pins.length + 1, 
+          latitude: newPinLocation.lat,
+          longitude: newPinLocation.lng,
+          nome: nome,
+          descricao: descricao,
+          midiaNome: midiaFile ? midiaFile.name : null, 
+          fileUrl: fileUrl,   
+          fileType: fileType  
+        };
+    
+    setPins([...pins, newPin]);
+    
+    // Limpa todos os campos
+    onAddClose(); 
+    setNome('');
+    setDescricao('');
+    setMidiaFile(null);
+    setNewPinLocation(null);
+  };
+
+  // função para abrir o modal de detalhes
+  const handleOpenDetails = (pin) => {
+    setSelectedPin(pin); 
+    onDetailsOpen(); 
+  };
+
   return (
     <Flex 
       flex="1"       
-      //imagem do fundo
       backgroundImage={ParchmentBg}
       backgroundSize="cover"
       backgroundPosition="center"
       direction="column"
-      position="relative" // posição relativa para o logo
+      position="relative"
     >
       {/* logo */}
       <Flex 
-        // posição absoluta para flutuar sobre o mapa
         position="absolute"
         top="16px"
         right="12px"
@@ -100,47 +188,182 @@ function MapPage() {
       {/* MAPA */}
       <Box
         flex="1"
-        minH="100vh" // ocupa tela toda
+        minH="100vh" 
         color="gray.600"
         overflow="hidden"
         bg="transparent" 
       >
         <MapContainer 
-          center={paranaPosition} // centraliza no Paraná
-          zoom={7} //zoom para mostrar o estado
-          
+          center={paranaPosition} 
+          zoom={7}
           style={{ 
             height: '100%', 
             width: '100%', 
-            minHeight: '100vh', // ocupa toda a altura
+            minHeight: '100vh', 
             backgroundColor: 'transparent' 
           }}
           zoomControl={false}
-          
-          maxBounds={paranaBounds} //limites do mapa
-          minZoom={7}// impede o zoom fora
+          maxBounds={paranaBounds}
+          minZoom={7}
           maxBoundsViscosity={1.0}
         >
           
-          {/* renderiza o GeoJSON quando ele for carregado */}
+          {/* fORMATO DO PARANÁ */}
           {geoData && (
             <GeoJSON 
               data={geoData} 
               style={geoJsonStyle}
-              onEachFeature={onEachFeature} // Passa a função de "hover"
+              onEachFeature={onEachFeature} 
             />
           )}
+
+          {/* "OUVINTE" DE CLIQUES */}
+          <MapClickHandler />
           
-          {/* um exemplo de pin */}
-          <Marker position={[-25.4284, -49.2733]}> 
-            <Popup>
-              <b>Curitiba</b> <br /> Este é um "Pin" de exemplo.
-            </Popup>
-          </Marker>
+          {/* PINS (que o usuário salvou) */}
+          {pins.map(pin => (
+            <Marker 
+              key={pin.id} 
+              position={[pin.latitude, pin.longitude]}
+              icon={customPinIcon} // usa o ícone customizado
+            >
+              <Popup className="pin-popup-simple">
+                <Heading size="md" fontFamily="serif">{pin.nome}</Heading>
+                <Divider my={2} borderColor="#3A2E39" />
+                
+                {/* Mostra uma prévia da descrição */}
+                <Text noOfLines={3} mb={2}> 
+                  {pin.descricao}
+                </Text>
+                
+                <Link 
+                  onClick={() => handleOpenDetails(pin)} // chama o modal
+                  color="#12240D" 
+                  fontWeight="bold"
+                  cursor="pointer" // cursor de "mãozinha"
+                  textDecoration="underline"
+                >
+                  Saiba mais
+                </Link>
+              </Popup>
+            </Marker>
+          ))}
         </MapContainer>
       </Box>
+
+      {/* para adicionar pin */}
+      <Modal isOpen={isAddOpen} onClose={onAddClose} isCentered>
+        <ModalOverlay />
+        <ModalContent bg="#FFEFDC" color="#3A2E39" fontFamily="serif">
+          <ModalHeader>Adicionar Novo Pin</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {/* Campo Nome */}
+            <FormControl mb={4}>
+              <FormLabel>Nome</FormLabel>
+              <Input 
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Ex: Kaigang, Xetá..."
+                bg="white"
+                borderColor="#C0B8AD"
+              />
+            </FormControl>
+
+            {/* Campo Descrição */}
+            <FormControl mb={4}>
+              <FormLabel>Descrição</FormLabel>
+              <Textarea 
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+                placeholder="Descreva a história ou o povo deste local..."
+                bg="white"
+                borderColor="#C0B8AD"
+              />
+            </FormControl>
+
+            {/* Campo Mídia */}
+            <FormControl>
+              <FormLabel>Mídia (PDF, JPEG, etc.)</FormLabel>
+              <Input 
+                type="file"
+                onChange={(e) => setMidiaFile(e.target.files[0])}
+                bg="white"
+                borderColor="#C0B8AD"
+                p={1.5}
+                // aceita apenas imagens e pdf
+                accept="image/png, image/jpeg, application/pdf"
+              />
+            </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button 
+              bg="#5D7541" // Verde
+              color="white"
+              borderRadius="none"
+              border="2px solid #091106"
+              mr={3} 
+              onClick={handleSavePin}
+              _hover={{ bg: '#12240D' }}
+            >
+              Salvar
+            </Button>
+            <Button variant="ghost" onClick={onAddClose}>Cancelar</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* modal 2: para detalhes (saiba mais) */}
+      <Modal isOpen={isDetailsOpen} onClose={onDetailsClose} isCentered>
+        <ModalOverlay />
+        {/* só renderiza se um pin for selecionado */}
+        {selectedPin && (
+          <ModalContent bg="#FFEFDC" color="#000000" fontFamily="serif">
+            {/* mostra o nome do pin */}
+            <ModalHeader>{selectedPin.nome}</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {/* linha horizontal */}
+              <Divider mb={4} borderColor="#12240D" />
+              {/* mostra a descrição */}
+              <Text>{selectedPin.descricao}</Text>
+              
+              {/* mostra a midia anexada */}
+              {selectedPin.fileUrl && ( 
+                <Box mt={4} p={3} bg="whiteAlpha.700" borderRadius="md">
+                  <Text fontWeight="bold" mb={2}>Mídia Anexada:</Text>
+                  
+                  {/* se for Imagem */}
+                  {selectedPin.fileType.startsWith('image/') && (
+                    <Image src={selectedPin.fileUrl} alt={selectedPin.nome} maxH="300px" borderRadius="md" />
+                  )}
+
+                  {/* se for PDF */}
+                  {selectedPin.fileType === 'application/pdf' && (
+                    <iframe 
+                      src={selectedPin.fileUrl} 
+                      width="100%" 
+                      height="400px" 
+                      title="preview-pdf"
+                    />
+                  )}
+
+                  {/* se for Outro tipo (só mostra o nome) */}
+                  {!selectedPin.fileType.startsWith('image/') && selectedPin.fileType !== 'application/pdf' && (
+                    <Text>{selectedPin.midiaNome}</Text>
+                  )}
+                </Box>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="ghost" onClick={onDetailsClose}>Fechar</Button>
+            </ModalFooter>
+          </ModalContent>
+        )}
+      </Modal>
+      
     </Flex>
   );
 }
-
 export default MapPage;

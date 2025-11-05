@@ -14,15 +14,53 @@ code {
 
 /* estiliza a etiqueta (tooltip) que aparece no hover */
 .map-label {
-  background-color: transparent !important; /* Tira o fundo branco */
-  border: none !important;                  /* Tira a borda */
-  box-shadow: none !important;             /* Tira a sombra */
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   
-  color: #3A2E39;     /* Cor do texto (a mesma da borda do mapa) */
-  font-family: serif;  /* Fonte serifada */
-  font-weight: bold;   /* Deixa mais fácil de ler */
-  font-size: 14px;     /* Tamanho da fonte */
+  color: #000000;
+  font-family: serif;
+  font-weight: bold;
+  font-size: 15px;
   
   /* Isso remove a "setinha" do tooltip */
   --leaflet-tooltip-arrow-width: 0px; 
+}
+
+/* o balão que abre ao clicar no pin */
+.pin-popup-simple .leaflet-popup-content-wrapper {
+  background: #FFEFDC;
+  border-radius: 12px;
+  
+  /* borda */
+  border: 2px solid #12240D; 
+  box-shadow: inset 0 0 0 1px #FBF9F4; 
+}
+
+/* Estiliza o conteúdo DENTRO do balao */
+.pin-popup-simple .leaflet-popup-content {
+  margin: 10px 15px !important; /* Espaçamento interno */
+  font-family: serif;
+  color: #12240D;
+}
+
+/* Estiliza a "setinha" do balao */
+.pin-popup-simple .leaflet-popup-tip {
+  background: #12240D; /* Cor da borda */
+}
+
+/* estilo para o novo pin */
+.custom-pin-icon {
+  /* cor verde do seu botão */
+  background-color: #5D7541; 
+  
+  /* faz o círculo */
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+
+  /* borda escura */
+  border: 2px solid #12240D;
+  /* borda interna clara */
+  box-shadow: inset 0 0 0 1px #FFEFDC; 
 }

@@ -14,6 +14,10 @@ class Usuario extends Model {
       tableName: 'usuarios' // nome da tabela no banco
     })
   }
+  static associate(models) {
+    this.hasMany(models.Acervo, { foreignKey: 'enviado_por', as: 'itens_acervo' });
+    this.hasMany(models.Pin, { foreignKey: 'autor_id', as: 'pins' });
+  }
 }
 
 module.exports = Usuario;
