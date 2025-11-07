@@ -1,5 +1,4 @@
 //pagina do mapa
-
 import React, { useState, useEffect } from 'react';
 import { 
   Box, 
@@ -28,19 +27,21 @@ import 'leaflet/dist/leaflet.css'; // css lealeft (mapa)
 import Logo from '../assets/mapadasorigens.png'; 
 import ParchmentBg from '../assets/Acervo.png'; 
 import axios from 'axios'; // para design do mapa
+//⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
 // corrige um bug comum onde os ícones do "pin" não aparecem.
 import L from 'leaflet';
 
-// (o bloco 'DefaultIcon = L.icon(...)' foi removido daqui)
+//⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
-// este é o ícone do pin customizado (um círculo)
+// pin customizado
 const customPinIcon = L.divIcon({
-  className: 'custom-pin-icon', // a classe CSS que vamos estilizar
+  className: 'custom-pin-icon', 
   iconSize: [20, 20], // o tamanho do ícone
   iconAnchor: [10, 10] // o ponto de âncora (centro)
 });
 
+//⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
 function MapPage() {
   
@@ -129,42 +130,67 @@ function MapPage() {
     return null; 
   }
   
-  // função para Salvar o Pin 
-  const handleSavePin = () => {
+  // função para Salvar o Pin conectada com o back
+const handleSavePin = async () => {
     
-    let fileUrl = null;
-    let fileType = null;
-    if (midiaFile) {
-      fileUrl = URL.createObjectURL(midiaFile); 
-      fileType = midiaFile.type; 
+    // Criar um FormData 
+    const formData = new FormData();
+    
+    //Adicionar todos os campos (texto e arquivo)
+    formData.append('nome', nome);
+    formData.append('descricao', descricao);
+    formData.append('latitude', newPinLocation.lat);
+    formData.append('longitude', newPinLocation.lng);
+    formData.append('midia', midiaFile); // <-- 'midia' (o nome bate com o backend)
+
+    try {
+      //ENVIA O FORMDATA PARA O BACKEND
+      const response = await axios.post('http://localhost:3000/pins', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data', // Avisa que é um FormData
+        }
+      });
+
+      //Pega o pin real que foi salvo no banco
+      const newPinFromDB = response.data;
+      
+      //Prepara o pin para o estado local
+      // (Agora criamos a URL real do arquivo salvo no backend)
+      const fileUrl = `http://localhost:3000/files/${newPinFromDB.midia}`;
+      const fileType = midiaFile ? midiaFile.type : null; // Pega o tipo do arquivo original
+
+      const newPinForState = {
+        id: newPinFromDB.id, 
+        latitude: newPinFromDB.latitude,
+        longitude: newPinFromDB.longitude,
+        nome: newPinFromDB.nome,
+        descricao: newPinFromDB.descricao,
+        midiaNome: newPinFromDB.midia, 
+        fileUrl: fileUrl,
+        fileType: fileType
+      };
+    
+      setPins([...pins, newPinForState]);
+      
+      //Limpa todos os campos
+      onAddClose(); 
+      setNome('');
+      setDescricao('');
+      setMidiaFile(null);
+      setNewPinLocation(null);
+
+    } catch (err) {
+      console.error("Erro ao salvar o pin:", err);
+      alert("Não foi possível salvar o pin. Tente novamente.");
     }
-
-    const newPin = {
-          id: pins.length + 1, 
-          latitude: newPinLocation.lat,
-          longitude: newPinLocation.lng,
-          nome: nome,
-          descricao: descricao,
-          midiaNome: midiaFile ? midiaFile.name : null, 
-          fileUrl: fileUrl,   
-          fileType: fileType  
-        };
-    
-    setPins([...pins, newPin]);
-    
-    // Limpa todos os campos
-    onAddClose(); 
-    setNome('');
-    setDescricao('');
-    setMidiaFile(null);
-    setNewPinLocation(null);
   };
-
   // função para abrir o modal de detalhes
   const handleOpenDetails = (pin) => {
     setSelectedPin(pin); 
     onDetailsOpen(); 
   };
+
+//⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
   return (
     <Flex 
@@ -335,7 +361,7 @@ function MapPage() {
                   <Text fontWeight="bold" mb={2}>Mídia Anexada:</Text>
                   
                   {/* se for Imagem */}
-                  {selectedPin.fileType.startsWith('image/') && (
+                  {selectedPin.fileType && selectedPin.fileType.startsWith('image/') && (
                     <Image src={selectedPin.fileUrl} alt={selectedPin.nome} maxH="300px" borderRadius="md" />
                   )}
 
@@ -350,7 +376,7 @@ function MapPage() {
                   )}
 
                   {/* se for Outro tipo (só mostra o nome) */}
-                  {!selectedPin.fileType.startsWith('image/') && selectedPin.fileType !== 'application/pdf' && (
+                  {selectedPin.fileType && !selectedPin.fileType.startsWith('image/') && selectedPin.fileType !== 'application/pdf' && (
                     <Text>{selectedPin.midiaNome}</Text>
                   )}
                 </Box>

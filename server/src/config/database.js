@@ -1,16 +1,20 @@
 //carrega do env
 
-require('dotenv').config();
+require('dotenv').config({path: '../../.env'});
 
 module.exports = {
     dialect: 'mysql',
-    host: 'localhost',
     username: 'root',
     password: process.env.DB_PASSWORD,
     database: 'mapa_origens',
-    define: {
-        timestamps: true,
-        underscored: true,
-    },
+
+    dialectOptions: {
+    socketPath: '/tmp/mysql.sock'
+  },
+  
+  define: {
+    timestamps: true,
+    underscored: true,
+  },
 };
 

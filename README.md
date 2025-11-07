@@ -26,6 +26,10 @@ Projeto de mapa interativo e acervo digital para a cultura dos povos originário
 * **--> server/src/config/database.js** Fica a configuração do banco de dados (senha, user etc..)
 * **--> server/src/models** Fica as tabelas do banco 
 * **--> server/src/config/index.js** Le as configurações 
+* **--> server/src/config/multer.js** Configuração para o upload de mídias (PDF, JPEG...)
+* **--> server/src/controllers** Fica a lógica de negócio (o que fazer quando uma rota é chamada)
+* **--> server/src/routes.js** Define os 'endereços' da API (ex: /pins)
+* **--> server/uploads** Onde as mídias (PDFs, JPEGs) são salvas.
 
 ---
 

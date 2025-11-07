@@ -1,14 +1,19 @@
+// server/src/models/Pin.js
 const {Model, DataTypes} = require('sequelize');
 
 class Pin extends Model {
     static init(sequelize) {
         super.init({
-            descricao: DataTypes.TEXT,
+            nome: DataTypes.STRING,
             midia: DataTypes.STRING,
-
-            //precisa da localizacao
+            descricao: DataTypes.TEXT,
             latitude: DataTypes.DECIMAL(10, 8),
             longitude: DataTypes.DECIMAL(11, 8),
+            autor_id: {
+              type: DataTypes.INTEGER,
+              allowNull: true, 
+            },
+            
         }, {
             sequelize,
             tableName: 'pins',

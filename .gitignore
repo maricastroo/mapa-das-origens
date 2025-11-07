@@ -27,3 +27,6 @@ ehthumbs.db
 # Arquivos de Editores de Código (VS Code, etc.)
 .vscode/
 .idea/
+
+# Arquivos de upload que os usuários enviam
+/uploads
