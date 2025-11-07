@@ -1,0 +1,15 @@
+# Dependências do Node (do servidor)
+/node_modules
+
+# Arquivos de ambiente (do servidor)
+.env
+
+# Arquivos de upload (do servidor)
+/uploads
+
+# Logs do servidor (se houver)
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

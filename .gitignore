@@ -1,22 +1,11 @@
-# Dependências do Node.js
-node_modules/
+# Dependências do Node (ignora em TODAS as pastas, client e server)
+**/node_modules
 
-# Arquivos de Log
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-
-# Arquivos de ambiente q nao foram criados ainda
+# Arquivos de ambiente (ignora em TODAS as pastas)
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Pasta de build do React (arquivos de produção)
+# Pasta de build do React
 /client/build
 
 # Arquivos de Sistema Operacional (macOS, Windows)
@@ -27,6 +16,3 @@ ehthumbs.db
 # Arquivos de Editores de Código (VS Code, etc.)
 .vscode/
 .idea/
-
-# Arquivos de upload que os usuários enviam
-/uploads
