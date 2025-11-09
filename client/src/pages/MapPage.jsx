@@ -27,12 +27,9 @@ import 'leaflet/dist/leaflet.css'; // css lealeft (mapa)
 import Logo from '../assets/mapadasorigens.png'; 
 import ParchmentBg from '../assets/Acervo.png'; 
 import axios from 'axios'; // para design do mapa
-//⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
 // corrige um bug comum onde os ícones do "pin" não aparecem.
 import L from 'leaflet';
-
-//⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
 // pin customizado
 const customPinIcon = L.divIcon({
@@ -40,8 +37,6 @@ const customPinIcon = L.divIcon({
   iconSize: [20, 20], // o tamanho do ícone
   iconAnchor: [10, 10] // o ponto de âncora (centro)
 });
-
-//⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
 function MapPage() {
   
@@ -68,6 +63,16 @@ function MapPage() {
     onOpen: onDetailsOpen, 
     onClose: onDetailsClose 
   } = useDisclosure();
+
+  //estado modal para edicao
+  const{
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose
+  } = useDisclosure();
+  const [editNome, setEditNome] = useState('');
+  const [editDescricao, setEditDescricao] = useState('');
+  const [editMidiaFile, setEditMidiaFile] = useState(null); // (arquivo para editar)
   
   // guarda qual pin foi selecionado para mostrar os detalhes
   const [selectedPin, setSelectedPin] = useState(null);
@@ -86,13 +91,13 @@ function MapPage() {
     
     axios.get(geoJsonUrl)
       .then((response) => {
-        // quando carrega guarda no estado
         setGeoData(response.data);
       })
       .catch((error) => {
         console.error("Erro ao buscar o GeoJSON:", error);
       });
   }, []);
+  
   // busca os pins salvos no banco quando a página carrega
   useEffect(() => {
     async function fetchPins() {
@@ -108,7 +113,7 @@ function MapPage() {
             descricao: pin.descricao,
             midiaNome: pin.midia,
             fileUrl: pin.midia ? `http://localhost:3000/files/${pin.midia}` : null,
-            fileType: pin.file_type // Pega o tipo do arquivo salvo no banco
+            fileType: pin.file_type 
           };
         });
         setPins(pinsForState);
@@ -118,7 +123,7 @@ function MapPage() {
     }
     fetchPins(); 
   }, []);
-  
+
   // estilizacao 
   function geoJsonStyle(feature) {
     return {
@@ -147,7 +152,6 @@ function MapPage() {
   function MapClickHandler() {
     useMapEvents({
       click(e) {
-        // salva as coordenadas do clique
         setNewPinLocation(e.latlng);
         onAddOpen(); // abre o modal de adicionar
       },
@@ -155,31 +159,22 @@ function MapPage() {
     return null; 
   }
   
-  // função para Salvar o Pin conectada com o back
+  // função para Salvar o Pin
   const handleSavePin = async () => {
-    
-    // Criar um FormData 
     const formData = new FormData();
-    
-    //Adicionar todos os campos (texto e arquivo)
     formData.append('nome', nome);
     formData.append('descricao', descricao);
     formData.append('latitude', newPinLocation.lat);
     formData.append('longitude', newPinLocation.lng);
-    formData.append('midia', midiaFile); // <-- 'midia' (o nome bate com o backend)
+    formData.append('midia', midiaFile);
 
     try {
-      //ENVIA O FORMDATA PARA O BACKEND
       const response = await axios.post('http://localhost:3000/pins', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data', // Avisa que é um FormData
-        }
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      //Pega o pin real que foi salvo no banco (ele já vem com file_type)
       const newPinFromDB = response.data;
 
-      //Prepara o pin para o estado local
       const newPinForState = {
         id: newPinFromDB.id, 
         latitude: newPinFromDB.latitude,
@@ -188,13 +183,11 @@ function MapPage() {
         descricao: newPinFromDB.descricao,
         midiaNome: newPinFromDB.midia, 
         fileUrl: newPinFromDB.midia ? `http://localhost:3000/files/${newPinFromDB.midia}` : null,
-        // (CORREÇÃO 3) Usar o file_type que veio do banco
         fileType: newPinFromDB.file_type 
       };
     
       setPins([...pins, newPinForState]);
       
-      //Limpa todos os campos
       onAddClose(); 
       setNome('');
       setDescricao('');
@@ -207,13 +200,85 @@ function MapPage() {
     }
   };
 
-  // função para abrir o modal de detalhes
+  // Funções de Edição
+  const handleOpenEditModal = () => {
+    if (!selectedPin) return;
+    setEditNome(selectedPin.nome);
+    setEditDescricao(selectedPin.descricao);
+    setEditMidiaFile(null); // Limpa o seletor de arquivo
+    onDetailsClose();
+    onEditOpen();
+  };
+
+  const handleUpdatePin = async () => {
+    const idToUpdate = selectedPin.id;
+    
+    //FormData para enviar o arquivo
+    const formData = new FormData();
+    formData.append('nome', editNome);
+    formData.append('descricao', editDescricao);
+    
+    // Só adiciona a mídia se o usuário selecionou um NOVO arquivo
+    if (editMidiaFile) {
+      formData.append('midia', editMidiaFile);
+    }
+
+    try {
+      // enviar como 'multipart/form-data'
+      const response = await axios.put(`http://localhost:3000/pins/${idToUpdate}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      const updatedPinFromDB = response.data;
+      
+      // atualizar o 'setPins' com os dados do arquivo atualizado
+      setPins(pins.map(p => {
+        if (p.id === idToUpdate) {
+          // Retorna o pin antigo misturado com o pin atualizado do DB
+          return {
+            ...p, // (Mantém lat/lng antigos)
+            nome: updatedPinFromDB.nome,
+            descricao: updatedPinFromDB.descricao,
+            midiaNome: updatedPinFromDB.midia,
+            fileUrl: updatedPinFromDB.midia ? `http://localhost:3000/files/${updatedPinFromDB.midia}` : null,
+            fileType: updatedPinFromDB.file_type
+          };
+        }
+        return p;
+      }));
+      onEditClose();
+    } catch (err) {
+      console.error("Erro ao atualizar o pin:", err);
+      alert("Não foi possível atualizar o pin. Tente novamente.");
+    }
+  };
+  // (DELETE) FUNCAO PARA DELETAR
+  const handleDeletePin = async () => {
+    const idToDelete = selectedPin.id;     
+    const confirmDelete = window.confirm(
+    "Tem certeza que deseja deletar este pin? A ação não poderá ser desfeita!"
+    );
+    if (!confirmDelete) {
+      return; 
+    }
+    
+    try {
+      await axios.delete(`http://localhost:3000/pins/${idToDelete}`);
+      setPins(pins.filter(pin => pin.id !== idToDelete));
+      onDetailsClose(); 
+    } catch (err) {
+      console.error("Erro ao deletar o pin:", err);
+      alert("Não foi possível deletar o pin. Tente novamente.");
+    }
+  };
+
+  //função para abrir o modal de detalhes
   const handleOpenDetails = (pin) => {
     setSelectedPin(pin); 
     onDetailsOpen(); 
   };
-
-//⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄⠄⠂⠁⠁⠂⠄
 
   return (
     <Flex 
@@ -280,7 +345,6 @@ function MapPage() {
                 <Heading size="md" fontFamily="serif">{pin.nome}</Heading>
                 <Divider my={2} borderColor="#3A2E39" />
                 
-                {/* Mostra uma prévia da descrição */}
                 <Text noOfLines={3} mb={2}> 
                   {pin.descricao}
                 </Text>
@@ -289,7 +353,7 @@ function MapPage() {
                   onClick={() => handleOpenDetails(pin)} // chama o modal
                   color="#12240D" 
                   fontWeight="bold"
-                  cursor="pointer" // cursor de "mãozinha"
+                  cursor="pointer"
                   textDecoration="underline"
                 >
                   Saiba mais
@@ -300,7 +364,7 @@ function MapPage() {
         </MapContainer>
       </Box>
 
-      {/* para adicionar pin */}
+      {/* modal para adicionar pin*/}
       <Modal isOpen={isAddOpen} onClose={onAddClose} isCentered>
         <ModalOverlay />
         <ModalContent bg="#FFEFDC" color="#3A2E39" fontFamily="serif">
@@ -340,7 +404,6 @@ function MapPage() {
                 bg="white"
                 borderColor="#C0B8AD"
                 p={1.5}
-                // aceita apenas imagens e pdf
                 accept="image/png, image/jpeg, application/pdf"
               />
             </FormControl>
@@ -348,7 +411,7 @@ function MapPage() {
 
           <ModalFooter>
             <Button 
-              bg="#5D7541" // Verde
+              bg="#5D7541" 
               color="white"
               borderRadius="none"
               border="2px solid #091106"
@@ -363,32 +426,22 @@ function MapPage() {
         </ModalContent>
       </Modal>
 
-      {/* modal 2: para detalhes (saiba mais) */}
+      {/* modal saiba mais */}
       <Modal isOpen={isDetailsOpen} onClose={onDetailsClose} isCentered>
         <ModalOverlay />
-        {/* só renderiza se um pin for selecionado */}
         {selectedPin && (
           <ModalContent bg="#FFEFDC" color="#000000" fontFamily="serif">
-            {/* mostra o nome do pin */}
             <ModalHeader>{selectedPin.nome}</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              {/* linha horizontal */}
               <Divider mb={4} borderColor="#12240D" />
-              {/* mostra a descrição */}
-              <Text>{selectedPin.descricao}</Text>
-              
-              {/* mostra a midia anexada */}
+              <Text>{selectedPin.descricao}</Text>             
               {selectedPin.fileUrl && ( 
                 <Box mt={4} p={3} bg="whiteAlpha.700" borderRadius="md">
-                  <Text fontWeight="bold" mb={2}>Mídia Anexada:</Text>
-                  
-                  {/* se for Imagem */}
+                  <Text fontWeight="bold" mb={2}>Mídia Anexada:</Text>                  
                   {selectedPin.fileType && selectedPin.fileType.startsWith('image/') && (
                     <Image src={selectedPin.fileUrl} alt={selectedPin.nome} maxH="300px" borderRadius="md" />
                   )}
-
-                  {/* se for PDF */}
                   {selectedPin.fileType === 'application/pdf' && (
                     <iframe 
                       src={selectedPin.fileUrl} 
@@ -397,21 +450,107 @@ function MapPage() {
                       title="preview-pdf"
                     />
                   )}
-
-                  {/* se for Outro tipo (só mostra o nome) */}
                   {selectedPin.fileType && !selectedPin.fileType.startsWith('image/') && selectedPin.fileType !== 'application/pdf' && (
                     <Text>{selectedPin.midiaNome}</Text>
                   )}
                 </Box>
               )}
             </ModalBody>
-            <ModalFooter>
-              <Button variant="ghost" onClick={onDetailsClose}>Fechar</Button>
+
+            <ModalFooter display="flex" justifyContent="space-between">
+              
+              <Box>
+                <Button 
+                  colorScheme="red" 
+                  mr={3} 
+                  onClick={handleDeletePin}
+                  borderRadius="none"
+                  border="2px solid #12240D"
+                  _hover={{ bg: '#a31f1f' }}
+                >
+                  Deletar
+                </Button>
+                
+                {/* botao editar */}
+                <Button 
+                  variant="outline" 
+                  borderColor="#12240D"
+                  borderRadius="none"
+                  _hover={{ bg: '#5D7541'}}
+                  onClick={handleOpenEditModal}
+                >
+                  Editar
+                </Button>
+              </Box>
+
+              <Button variant="ghost" onClick={onDetailsClose}>
+                Fechar
+              </Button>
+
             </ModalFooter>
           </ModalContent>
         )}
       </Modal>
       
+      {/* modal para editar pin */}
+      <Modal isOpen={isEditOpen} onClose={onEditClose} isCentered>
+        <ModalOverlay />
+        <ModalContent bg="#FFEFDC" color="#3A2E39" fontFamily="serif">
+          <ModalHeader>Editar Pin</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            
+            {/* Campo Nome (para editar) */}
+            <FormControl mb={4}>
+              <FormLabel>Nome</FormLabel>
+              <Input 
+                value={editNome}
+                onChange={(e) => setEditNome(e.target.value)}
+                bg="white"
+                borderColor="#C0B8AD"
+              />
+            </FormControl>
+
+            {/* Campo Descrição (para editar) */}
+            <FormControl mb={4}>
+              <FormLabel>Descrição</FormLabel>
+              <Textarea 
+                value={editDescricao}
+                onChange={(e) => setEditDescricao(e.target.value)}
+                bg="white"
+                borderColor="#C0B8AD"
+              />
+            </FormControl>
+            
+            {/* campo para midia*/}
+            <FormControl>
+              <FormLabel>Mídia (Opcional: Substitua o arquivo atual)</FormLabel>
+              <Input 
+                type="file"
+                onChange={(e) => setEditMidiaFile(e.target.files[0])}
+                bg="white"
+                borderColor="#C0B8AD"
+                p={1.5}
+                accept="image/png, image/jpeg, application/pdf"
+              />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button 
+              bg="#5D7541" // Verde
+              color="white"
+              borderRadius="none"
+              border="2px solid #091106"
+              mr={3} 
+              onClick={handleUpdatePin}
+              _hover={{ bg: '#12240D' }}
+            >
+              Salvar Mudanças
+            </Button>
+            <Button variant="ghost" onClick={onEditClose}>Cancelar</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Flex>
   );
 }

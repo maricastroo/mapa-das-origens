@@ -61,20 +61,54 @@ async index(req, res) {
       return res.status(400).json({ error: 'Erro ao salvar o pin.' });
     }
   },
+
   //FUNCAO PARA UPDATE DE PIN
   async update(req, res) {
     try{
       const { id } = req.params;
-      const {nome, descricao} = req.body;
+      const { nome, descricao } = req.body; // Pega os dados de texto
+      
+      // Pega os dados do NOVO arquivo (se houver)
+      const newMidiaFile = req.file ? req.file.filename : undefined;
+      const newFileType = req.file ? req.file.mimetype : undefined;
 
       const pin = await Pin.findByPk(id);
       if(!pin){
+        if(req.file) {
+          const newFilePath = path.join(__dirname, '..', '..', 'uploads', req.file.filename);
+          fs.unlink(newFilePath, (err) => {
+            if (err) console.error("Erro ao deletar arquivo órfão:", err);
+          });
+        }
         return res.status(404).json({ error: 'Pin não encontrado.' });
       }
-      //por logica do update de midia aqui
+      // Se um novo arquivo foi enviado (newMidiaFile existe)
+      if (newMidiaFile) {
+        // e o pin já tinha uma mídia antiga (pin.midia existe)
+        if (pin.midia) {
+          // encontre o caminho da mídia antiga e delete-a.
+          const oldFilePath = path.join(__dirname, '..', '..', 'uploads', pin.midia);
+          
+          // fs.existsSync checa se o arquivo realmente existe antes de tentar deletar
+          if (fs.existsSync(oldFilePath)) {
+            fs.unlink(oldFilePath, (err) => {
+              if (err) console.error("Erro ao deletar mídia antiga:", err);
+            });
+          }
+        }
+        // Atualiza o pin com os dados da NOVA mídia
+        pin.midia = newMidiaFile;
+        pin.file_type = newFileType;
+      }
+      // Atualiza o pin com os dados de TEXTO
+      pin.nome = nome;
+      pin.descricao = descricao;
 
-      await pin.update({ nome, descricao });
-      return res.json(pin);
+      // Salva todas as alterações (texto e/ou mídia) no banco
+      await pin.save(); 
+
+      return res.json(pin); // Retorna o pin atualizado
+
     }catch(err){
       console.error(err);
       return res.status(500).json({ error: 'Erro ao atualizar o pin.' });
@@ -97,11 +131,14 @@ async index(req, res) {
     //deleta o arquivo da PASTA UPLOADS
     if (midiaFileName) {
       const filePath = path.join(__dirname, '..', '..', 'uploads', midiaFileName);
-      fs.unlink(filePath, (err) => {
-        if (err) {
-          console.error('Erro ao deletar o arquivo de mídia:', err);
-        }
-      });
+      // fs.existsSync checa se o arquivo existe
+      if (fs.existsSync(filePath)) {
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error('Erro ao deletar o arquivo de mídia:', err);
+          }
+        });
+      }
     }
     return res.status(204).send(); //sucesso
     }catch(err){
