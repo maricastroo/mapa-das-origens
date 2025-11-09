@@ -65,7 +65,7 @@ function Sidebar() {
           textAlign="center"
           py={4} // espaco vertical
           bg={isActive('/mapa') ? activeBg : 'transparent'} // fundo
-          _hover={{ textDecor: 'none', bg: isActive('/mapa') ? activeBg : '#F7F1E9' }}
+          _hover={{ textDecor: 'none', bg: activeBg }}
         >
           <Text fontSize="2xl" fontFamily="Belezza"> {/* fonte */}
             Mapa
@@ -80,7 +80,7 @@ function Sidebar() {
           textAlign="center"
           py={4}
           bg={isActive('/acervo') ? activeBg : 'transparent'} 
-          _hover={{ textDecor: 'none', bg: isActive('/acervo') ? activeBg : '#F7F1E9' }}
+          _hover={{ textDecor: 'none', bg: activeBg }}
         >
           <Text fontSize="2xl" fontFamily="Belezza">
             Acervo
@@ -95,7 +95,7 @@ function Sidebar() {
           textAlign="center"
           py={4}
           bg={isActive('/perfil') ? activeBg : 'transparent'}
-          _hover={{ textDecor: 'none', bg: isActive('/perfil') ? activeBg : '#F7F1E9' }}
+          _hover={{ textDecor: 'none', bg: activeBg }}
         >
           <Text fontSize="2xl" fontFamily="Belezza">
             Perfil
