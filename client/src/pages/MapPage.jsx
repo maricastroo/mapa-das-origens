@@ -1,5 +1,5 @@
 //pagina do mapa
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react'; 
 import { 
   Box, 
   Flex, 
@@ -22,7 +22,7 @@ import {
   Link,
   Divider 
 } from '@chakra-ui/react';
-import { MapContainer, GeoJSON, Marker, Popup, useMapEvents, Tooltip } from 'react-leaflet';
+import { MapContainer, GeoJSON, Marker, Popup, useMapEvents, Tooltip } from 'react-leaflet'; 
 import 'leaflet/dist/leaflet.css'; // css lealeft (mapa)
 import Logo from '../assets/mapadasorigens.png'; 
 import ParchmentBg from '../assets/Acervo.png'; 
@@ -31,11 +31,30 @@ import axios from 'axios'; // para design do mapa
 // corrige um bug comum onde os ícones do "pin" não aparecem.
 import L from 'leaflet';
 
-// pin customizado
+// pin customizado (o seu círculo)
 const customPinIcon = L.divIcon({
   className: 'custom-pin-icon', 
   iconSize: [20, 20], // o tamanho do ícone
   iconAnchor: [10, 10] // o ponto de âncora (centro)
+});
+
+// LISTA DE CIDADES E COORDENADAS
+const cidadesFixas = [
+  { nome: 'CURITIBA', lat: -25.4297, lng: -49.2711 },
+  { nome: 'MARINGÁ', lat: -23.4253, lng: -51.9386 },
+  { nome: 'PONTA GROSSA', lat: -25.0945, lng: -50.1633 },
+  { nome: 'LONDRINA', lat: -23.3045, lng: -51.1696 },
+  { nome: 'CASCAVEL', lat: -24.9555, lng: -53.4552 },
+  { nome: 'FOZ DO IGUAÇU', lat: -25.5469, lng: -54.5882 },
+  { nome: 'GUARAPUAVA', lat: -25.3934, lng: -51.4563 },
+  { nome: 'GUARATUBA', lat: -25.8826, lng: -48.5746 },
+  { nome: 'FRANCISCO BELTRÃO', lat: -26.081, lng: -53.0534 },
+];
+// (Usado como "âncora" para os nomes das cidades, para que não sejam clicáveis)
+const invisibleIcon = L.divIcon({
+  className: 'invisible-icon',
+  iconSize: [0, 0], 
+  iconAnchor: [0, 0]
 });
 
 function MapPage() {
@@ -45,7 +64,7 @@ function MapPage() {
   const editFileRef = useRef(null);
   
   // coordenadas centrais do Paraná
-  const paranaPosition = [-24.8919, -51.5515];
+  const paranaPosition = [-24.65, -51.5515]; // Posição ajustada
 
   // coordenadas dos limites do Paraná
   const paranaBounds = [
@@ -138,30 +157,41 @@ function MapPage() {
       fillOpacity: 1
     };
   }
-
-  // nome aparecer quando passar mouse
+  // nome aparecer quando passar mouse E "ouvinte" de clique
   function onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.name) {
-      layer.bindTooltip(
-        feature.properties.name, 
-        {
-          sticky: true, 
-          className: 'map-label' 
-        }
+      
+      // Verifica se o nome da cidade (feature) está na nossa lista de cidadesFixas
+      const isCidadeFixa = cidadesFixas.some(cidade => 
+        cidade.nome.toLowerCase() === feature.properties.name.toLowerCase()
       );
+      if (!isCidadeFixa) {
+        layer.bindTooltip(
+          feature.properties.name, 
+          {
+            sticky: true, 
+            className: 'map-label' 
+          }
+        );
+      }
     }
-  }
-
-  // "ouvinte" de cliques no mapa
-  function MapClickHandler() {
-    useMapEvents({
-      click(e) {
-        setNewPinLocation(e.latlng);
-        onAddOpen(); // abre o modal de adicionar
-      },
+    
+    // O "ouvinte" de clique (só na área do Paraná)
+    layer.on('click', (e) => {
+      L.DomEvent.stopPropagation(e); 
+      setNewPinLocation(e.latlng);
+      onAddOpen(); // abre o modal de adicionar
     });
-    return null; 
-  }
+  }  
+  // Para centralizar o mapa
+  const mapRef = useCallback((map) => {
+    if (map) {
+      setTimeout(() => {
+        map.invalidateSize(); // Força o recalculo do tamanho
+        map.setView(paranaPosition, 8); // Força o centro e zoom
+      }, 100); 
+    }
+  }, [paranaPosition]); 
   
   // função para Salvar o Pin
   const handleSavePin = async () => {
@@ -306,24 +336,25 @@ function MapPage() {
       {/* MAPA */}
       <Box
         flex="1"
-        minH="100vh" 
+        h="100vh" 
+        w="100%"
         color="gray.600"
         overflow="hidden"
         bg="transparent" 
       >
         <MapContainer 
           center={paranaPosition} 
-          zoom={7}
+          zoom={8}
           style={{ 
             height: '100%', 
             width: '100%', 
-            minHeight: '100vh', 
             backgroundColor: 'transparent' 
           }}
           zoomControl={false}
           maxBounds={paranaBounds}
           minZoom={7}
           maxBoundsViscosity={1.0}
+          whenCreated={mapRef} 
         >
           
           {/* fORMATO DO PARANÁ */}
@@ -334,16 +365,13 @@ function MapPage() {
               onEachFeature={onEachFeature} 
             />
           )}
-
-          {/* "OUVINTE" DE CLIQUES */}
-          <MapClickHandler />
           
           {/* PINS (que o usuário salvou) */}
           {pins.map(pin => (
             <Marker 
               key={pin.id} 
               position={[pin.latitude, pin.longitude]}
-              icon={customPinIcon} // usa o ícone customizado
+              icon={customPinIcon} 
             >
               <Popup className="pin-popup-simple">
                 <Heading size="md" fontFamily="Belezza">{pin.nome}</Heading>
@@ -354,8 +382,9 @@ function MapPage() {
                 </Text>
                 
                 <Link 
-                  onClick={() => handleOpenDetails(pin)} // chama o modal
-                  color="#12240D"
+                  onClick={() => handleOpenDetails(pin)} 
+                  color="#3A5324" 
+                  fontSize="md" 
                   fontWeight="bold"
                   cursor="pointer"
                   textDecoration="underline"
@@ -365,6 +394,23 @@ function MapPage() {
               </Popup>
             </Marker>
           ))}
+          
+          {/*RENDERIZA OS NOMES FIXOS DAS CIDADES*/}
+          {cidadesFixas.map(cidade => (
+            <Marker
+              key={cidade.nome}
+              position={[cidade.lat, cidade.lng]}
+              icon={invisibleIcon} 
+            >
+              <Tooltip
+                permanent // Deixa o nome sempre visível
+                direction="center" // Centraliza o texto
+                className="city-label-marker" 
+              >
+                {cidade.nome}
+              </Tooltip>
+            </Marker>
+          ))}          
         </MapContainer>
       </Box>
 
