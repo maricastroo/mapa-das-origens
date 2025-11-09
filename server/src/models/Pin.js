@@ -13,6 +13,8 @@ class Pin extends Model {
               type: DataTypes.INTEGER,
               allowNull: true, 
             },
+
+        file_type: DataTypes.STRING,
             
         }, {
             sequelize,

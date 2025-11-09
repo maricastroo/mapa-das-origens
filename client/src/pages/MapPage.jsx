@@ -93,7 +93,32 @@ function MapPage() {
         console.error("Erro ao buscar o GeoJSON:", error);
       });
   }, []);
-
+  // busca os pins salvos no banco quando a página carrega
+  useEffect(() => {
+    async function fetchPins() {
+      try {
+        const response = await axios.get('http://localhost:3000/pins');
+        const pinsFromDb = response.data;
+        const pinsForState = pinsFromDb.map(pin => {
+          return {
+            id: pin.id,
+            latitude: pin.latitude,
+            longitude: pin.longitude,
+            nome: pin.nome,
+            descricao: pin.descricao,
+            midiaNome: pin.midia,
+            fileUrl: pin.midia ? `http://localhost:3000/files/${pin.midia}` : null,
+            fileType: pin.file_type // Pega o tipo do arquivo salvo no banco
+          };
+        });
+        setPins(pinsForState);
+      } catch (err) {
+        console.error("Erro ao buscar os pins:", err);
+      }
+    }
+    fetchPins(); 
+  }, []);
+  
   // estilizacao 
   function geoJsonStyle(feature) {
     return {
@@ -131,7 +156,7 @@ function MapPage() {
   }
   
   // função para Salvar o Pin conectada com o back
-const handleSavePin = async () => {
+  const handleSavePin = async () => {
     
     // Criar um FormData 
     const formData = new FormData();
@@ -151,14 +176,10 @@ const handleSavePin = async () => {
         }
       });
 
-      //Pega o pin real que foi salvo no banco
+      //Pega o pin real que foi salvo no banco (ele já vem com file_type)
       const newPinFromDB = response.data;
-      
-      //Prepara o pin para o estado local
-      // (Agora criamos a URL real do arquivo salvo no backend)
-      const fileUrl = `http://localhost:3000/files/${newPinFromDB.midia}`;
-      const fileType = midiaFile ? midiaFile.type : null; // Pega o tipo do arquivo original
 
+      //Prepara o pin para o estado local
       const newPinForState = {
         id: newPinFromDB.id, 
         latitude: newPinFromDB.latitude,
@@ -166,8 +187,9 @@ const handleSavePin = async () => {
         nome: newPinFromDB.nome,
         descricao: newPinFromDB.descricao,
         midiaNome: newPinFromDB.midia, 
-        fileUrl: fileUrl,
-        fileType: fileType
+        fileUrl: newPinFromDB.midia ? `http://localhost:3000/files/${newPinFromDB.midia}` : null,
+        // (CORREÇÃO 3) Usar o file_type que veio do banco
+        fileType: newPinFromDB.file_type 
       };
     
       setPins([...pins, newPinForState]);
@@ -184,6 +206,7 @@ const handleSavePin = async () => {
       alert("Não foi possível salvar o pin. Tente novamente.");
     }
   };
+
   // função para abrir o modal de detalhes
   const handleOpenDetails = (pin) => {
     setSelectedPin(pin); 

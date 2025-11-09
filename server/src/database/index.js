@@ -36,7 +36,7 @@ class Database {
   async syncDatabase() {
     try {
       // Sincroniza o banco (cria tabelas se não existirem)
-      await this.connection.sync();
+      await this.connection.sync({alter: true});
       console.log('Tabelas sincronizadas com sucesso!');
     } catch (err) {
       console.error('Erro ao sincronizar tabelas:', err);
