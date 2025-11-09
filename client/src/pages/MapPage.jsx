@@ -20,8 +20,13 @@ import {
   Input,
   Textarea,
   Link,
-  Divider 
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListIcon 
 } from '@chakra-ui/react';
+import {CheckIcon, LockIcon } from '@chakra-ui/icons'; 
 import { MapContainer, GeoJSON, Marker, Popup, useMapEvents, Tooltip } from 'react-leaflet'; 
 import 'leaflet/dist/leaflet.css'; // css lealeft (mapa)
 import Logo from '../assets/mapadasorigens.png'; 
@@ -93,6 +98,14 @@ function MapPage() {
     onOpen: onEditOpen,
     onClose: onEditClose
   } = useDisclosure();
+  
+  // --- useDisclosure PARA O MODAL DE AJUDA ---
+  const { 
+    isOpen: isHelpOpen, 
+    onOpen: onHelpOpen, 
+    onClose: onHelpClose 
+  } = useDisclosure();
+
   const [editNome, setEditNome] = useState('');
   const [editDescricao, setEditDescricao] = useState('');
   const [editMidiaFile, setEditMidiaFile] = useState(null); // (arquivo para editar)
@@ -323,6 +336,25 @@ function MapPage() {
       direction="column"
       position="relative"
     >
+      {/* BOTÃO DE AJUDA */}
+      <IconButton
+        aria-label="Como usar o mapa"
+        icon={<Text fontSize="2xl" fontWeight="bold" fontFamily="Belezza" lineHeight="1">?</Text>}
+        position="absolute"
+        top="16px"
+        left="16px" 
+        zIndex={1000} 
+        bg="#FFEFDC" 
+        color="#000000" 
+        fontFamily="Belezza"
+        borderRadius="full"
+        border="1px solid #000000" 
+        boxSize="50px"
+        fontSize="2xl"
+        _hover={{ bg: '#E9CEAE' }} 
+        onClick={onHelpOpen}
+      />
+
       {/* logo */}
       <Flex 
         position="absolute"
@@ -403,8 +435,9 @@ function MapPage() {
               icon={invisibleIcon} 
             >
               <Tooltip
-                permanent // Deixa o nome sempre visível
-                direction="center" // Centraliza o texto
+                permanent 
+                direction="center" 
+                offset={[0, 0]}
                 className="city-label-marker" 
               >
                 {cidade.nome}
@@ -682,6 +715,54 @@ function MapPage() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* MODAL DE AJUDA*/}
+      <Modal isOpen={isHelpOpen} onClose={onHelpClose} isCentered>
+        <ModalOverlay />
+        <ModalContent bg="#FFEFDC" color="#000000" fontFamily="Belezza">
+          <ModalHeader fontWeight="bold">Como Usar o Mapa</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text mb={4} fontWeight="normal">Para interagir com o mapa, siga os passos:</Text>
+            <List spacing={3} fontWeight="normal">
+              <ListItem>
+                <ListIcon as={CheckIcon} color="#3A5324" />
+                <Text as="b" display="inline">Adicionar um Pin:</Text> Clique em qualquer cidade (dentro do contorno do Paraná) para abrir o formulário.
+              </ListItem>
+              <ListItem>
+                <ListIcon as={CheckIcon} color="#3A5324" />
+                <Text as="b" display="inline">Ver Detalhes:</Text> Clique em um pin (círculo verde) que já está no mapa.
+              </ListItem>
+              <ListItem>
+                <ListIcon as={CheckIcon} color="#3A5324" />
+                <Text as="b" display="inline">Editar/Deletar:</Text> Na opção de "Saiba mais", use os botões "Editar" ou "Deletar".
+              </ListItem>
+              <ListItem>
+                <ListIcon as={CheckIcon} color="#3A5324" />
+                <Text as="b" display="inline">Navegar:</Text> Clique e arraste para mover o mapa. Use o scroll do mouse para dar zoom.
+              </ListItem>
+              <ListItem>
+                <ListIcon as={LockIcon} color="#3A5324" />
+                <Text as="b" display="inline">Permissões:</Text> Você precisa estar logado para adicionar, editar ou deletar pins. Você só pode editar ou deletar os pins que você mesmo criou.
+              </ListItem>
+            </List>
+          </ModalBody>
+          <ModalFooter>
+            <Button 
+              variant="outline" 
+              onClick={onHelpClose}
+              borderColor="#3A5324" 
+              color="#3A5324"
+              borderRadius="full" 
+              _hover={{ bg: '#213A14', color: 'white' }}
+              fontWeight="normal"
+            >
+              Entendi!
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
     </Flex>
   );
 }
