@@ -1,5 +1,5 @@
 //pagina do mapa
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
   Flex, 
@@ -39,6 +39,10 @@ const customPinIcon = L.divIcon({
 });
 
 function MapPage() {
+  
+  // Refs para os inputs de arquivo (para o botão bonito)
+  const addFileRef = useRef(null);
+  const editFileRef = useRef(null);
   
   // coordenadas centrais do Paraná
   const paranaPosition = [-24.8919, -51.5515];
@@ -342,8 +346,8 @@ function MapPage() {
               icon={customPinIcon} // usa o ícone customizado
             >
               <Popup className="pin-popup-simple">
-                <Heading size="md" fontFamily="serif">{pin.nome}</Heading>
-                <Divider my={2} borderColor="#3A2E39" />
+                <Heading size="md" fontFamily="Belezza">{pin.nome}</Heading>
+                <Divider my={2} borderColor="#213A14" />
                 
                 <Text noOfLines={3} mb={2}> 
                   {pin.descricao}
@@ -351,7 +355,7 @@ function MapPage() {
                 
                 <Link 
                   onClick={() => handleOpenDetails(pin)} // chama o modal
-                  color="#12240D" 
+                  color="#12240D"
                   fontWeight="bold"
                   cursor="pointer"
                   textDecoration="underline"
@@ -364,81 +368,120 @@ function MapPage() {
         </MapContainer>
       </Box>
 
-      {/* modal para adicionar pin*/}
+      {/* MODAL ADICIONAR  */}
       <Modal isOpen={isAddOpen} onClose={onAddClose} isCentered>
         <ModalOverlay />
-        <ModalContent bg="#FFEFDC" color="#3A2E39" fontFamily="serif">
+        {/* Título em negrito (default), resto normal */}
+        <ModalContent bg="#FFEFDC" color="#000000" fontFamily="Belezza">
           <ModalHeader>Adicionar Novo Pin</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {/* Campo Nome */}
             <FormControl mb={4}>
-              <FormLabel>Nome</FormLabel>
+              <FormLabel fontWeight="normal">Nome</FormLabel>
               <Input 
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Ex: Kaigang, Xetá..."
-                bg="white"
-                borderColor="#C0B8AD"
+                bg="#FFEFDC" 
+                borderColor="#000000" 
+                borderWidth="1px" 
+                borderRadius="5px" 
               />
             </FormControl>
 
             {/* Campo Descrição */}
             <FormControl mb={4}>
-              <FormLabel>Descrição</FormLabel>
+              <FormLabel fontWeight="normal">Descrição</FormLabel>
               <Textarea 
                 value={descricao}
                 onChange={(e) => setDescricao(e.target.value)}
                 placeholder="Descreva a história ou o povo deste local..."
-                bg="white"
-                borderColor="#C0B8AD"
+                bg="#FFEFDC" 
+                borderColor="#000000" 
+                borderWidth="1px" 
+                borderRadius="5px" 
               />
             </FormControl>
 
             {/* Campo Mídia */}
             <FormControl>
-              <FormLabel>Mídia (PDF, JPEG, etc.)</FormLabel>
+              <FormLabel fontWeight="normal">Mídia (PDF, JPEG, etc.)</FormLabel>
               <Input 
                 type="file"
+                ref={addFileRef}
                 onChange={(e) => setMidiaFile(e.target.files[0])}
-                bg="white"
-                borderColor="#C0B8AD"
-                p={1.5}
                 accept="image/png, image/jpeg, application/pdf"
+                style={{ display: 'none' }}
               />
+              <Flex align="center">
+                <Button 
+                  onClick={() => addFileRef.current.click()}
+                  bg="#E9CEAE" 
+                  color="#000000"
+                  borderRadius="full" 
+                  border="none" 
+                  fontWeight="normal"
+                  _hover={{ bg: '#DBC0A0' }} 
+                >
+                  Escolher Arquivo
+                </Button>
+                <Text ml={3} noOfLines={1} color={midiaFile ? "#000000" : "gray.600"} fontSize="sm">
+                  {midiaFile ? midiaFile.name : "Nenhum arquivo selecionado"}
+                </Text>
+              </Flex>
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
             <Button 
-              bg="#5D7541" 
+              bg="#3A5324" 
               color="white"
-              borderRadius="none"
-              border="2px solid #091106"
+              borderRadius="full" 
+              border="none"
               mr={3} 
               onClick={handleSavePin}
-              _hover={{ bg: '#12240D' }}
+              _hover={{ bg: '#213A14' }} 
+              fontWeight="normal"
             >
               Salvar
             </Button>
-            <Button variant="ghost" onClick={onAddClose}>Cancelar</Button>
+            <Button 
+              variant="outline" 
+              onClick={onAddClose}
+              borderColor="#3A5324" 
+              color="#3A5324"
+              borderRadius="full" 
+              _hover={{ bg: '#213A14', color: 'white' }}
+              fontWeight="normal"
+            >
+              Cancelar
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {/* modal saiba mais */}
+      {/* MODAL SAIBA MAIS */}
       <Modal isOpen={isDetailsOpen} onClose={onDetailsClose} isCentered>
         <ModalOverlay />
         {selectedPin && (
-          <ModalContent bg="#FFEFDC" color="#000000" fontFamily="serif">
+          // Título em negrito (default), resto normal
+          <ModalContent bg="#FFEFDC" color="#000000" fontFamily="Belezza">
             <ModalHeader>{selectedPin.nome}</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <Divider mb={4} borderColor="#12240D" />
+              <Divider mb={4} borderColor="#091106" /> 
+              
               <Text>{selectedPin.descricao}</Text>             
+              
+              {/* Divisor */}
+              {selectedPin.fileUrl && (
+                <Divider my={4} borderColor="#091106" /> 
+              )}
+
               {selectedPin.fileUrl && ( 
-                <Box mt={4} p={3} bg="whiteAlpha.700" borderRadius="md">
-                  <Text fontWeight="bold" mb={2}>Mídia Anexada:</Text>                  
+                <Box mt={4} p={0} bg="#FFEFDC"> 
+                  <Text mb={2} fontWeight="normal">Mídia Anexada:</Text> {/* Sem negrito */}                
                   {selectedPin.fileType && selectedPin.fileType.startsWith('image/') && (
                     <Image src={selectedPin.fileUrl} alt={selectedPin.nome} maxH="300px" borderRadius="md" />
                   )}
@@ -464,9 +507,10 @@ function MapPage() {
                   colorScheme="red" 
                   mr={3} 
                   onClick={handleDeletePin}
-                  borderRadius="none"
-                  border="2px solid #12240D"
-                  _hover={{ bg: '#a31f1f' }}
+                  borderRadius="full" 
+                  border="none"
+                  fontWeight="normal"
+                  _hover={{ bg: '#a31f1f' }} 
                 >
                   Deletar
                 </Button>
@@ -474,16 +518,26 @@ function MapPage() {
                 {/* botao editar */}
                 <Button 
                   variant="outline" 
-                  borderColor="#12240D"
-                  borderRadius="none"
-                  _hover={{ bg: '#5D7541'}}
+                  borderColor="#3A5324" 
+                  borderRadius="full" 
+                  color="#3A5324"
+                  _hover={{ bg: '#213A14', color: 'white' }} 
                   onClick={handleOpenEditModal}
+                  fontWeight="normal"
                 >
                   Editar
                 </Button>
               </Box>
 
-              <Button variant="ghost" onClick={onDetailsClose}>
+              <Button 
+                variant="outline" 
+                onClick={onDetailsClose}
+                color="#3A5324"
+                _hover={{ bg: '#213A14', color: 'white' }} 
+                borderRadius="full" 
+                borderColor="#3A5324" 
+                fontWeight="normal"
+              >
                 Fechar
               </Button>
 
@@ -492,62 +546,93 @@ function MapPage() {
         )}
       </Modal>
       
-      {/* modal para editar pin */}
+      {/* MODAL EDITAR*/}
       <Modal isOpen={isEditOpen} onClose={onEditClose} isCentered>
         <ModalOverlay />
-        <ModalContent bg="#FFEFDC" color="#3A2E39" fontFamily="serif">
+        {/* Título em negrito (default), resto normal */}
+        <ModalContent bg="#FFEFDC" color="#000000" fontFamily="Belezza">
           <ModalHeader>Editar Pin</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             
             {/* Campo Nome (para editar) */}
             <FormControl mb={4}>
-              <FormLabel>Nome</FormLabel>
+              <FormLabel fontWeight="normal">Nome</FormLabel>
               <Input 
                 value={editNome}
                 onChange={(e) => setEditNome(e.target.value)}
-                bg="white"
-                borderColor="#C0B8AD"
+                bg="#FFEFDC" 
+                borderColor="#000000" 
+                borderWidth="1px" 
+                borderRadius="5px" 
               />
             </FormControl>
 
             {/* Campo Descrição (para editar) */}
             <FormControl mb={4}>
-              <FormLabel>Descrição</FormLabel>
+              <FormLabel fontWeight="normal">Descrição</FormLabel>
               <Textarea 
                 value={editDescricao}
                 onChange={(e) => setEditDescricao(e.target.value)}
-                bg="white"
-                borderColor="#C0B8AD"
+                bg="#FFEFDC" 
+                borderColor="#000000" 
+                borderWidth="1px" 
+                borderRadius="5px" 
               />
             </FormControl>
             
             {/* campo para midia*/}
             <FormControl>
-              <FormLabel>Mídia (Opcional: Substitua o arquivo atual)</FormLabel>
+              <FormLabel fontWeight="normal">Mídia (Opcional: Substitua o arquivo atual)</FormLabel>
               <Input 
                 type="file"
+                ref={editFileRef}
                 onChange={(e) => setEditMidiaFile(e.target.files[0])}
-                bg="white"
-                borderColor="#C0B8AD"
-                p={1.5}
                 accept="image/png, image/jpeg, application/pdf"
+                style={{ display: 'none' }}
               />
+              <Flex align="center">
+                <Button 
+                  onClick={() => editFileRef.current.click()}
+                  bg="#E9CEAE" 
+                  color="#000000"
+                  borderRadius="full" 
+                  border="none" 
+                  fontWeight="normal"
+                  _hover={{ bg: '#DBC0A0' }} 
+                >
+                  Escolher Arquivo
+                </Button> 
+                <Text ml={3} noOfLines={1} color={editMidiaFile ? "#000000" : "gray.600"} fontSize="sm">
+                  {editMidiaFile ? editMidiaFile.name : "Nenhum arquivo (manterá o antigo)"}
+                </Text>
+              </Flex>
             </FormControl>
           </ModalBody>
           <ModalFooter>
             <Button 
-              bg="#5D7541" // Verde
+              bg="#3A5324" 
               color="white"
-              borderRadius="none"
-              border="2px solid #091106"
+              borderRadius="full" 
+              border="none"
               mr={3} 
               onClick={handleUpdatePin}
-              _hover={{ bg: '#12240D' }}
+              _hover={{ bg: '#213A14' }} 
+              fontWeight="normal"
             >
               Salvar Mudanças
             </Button>
-            <Button variant="ghost" onClick={onEditClose}>Cancelar</Button>
+            <Button 
+              variant="outline" 
+              onClick={onEditClose}
+              borderColor="#3A5324" 
+              color="#3A5324"
+              borderRadius="full" 
+              _hover={{ bg: '#213A14', color: 'white' }}
+              fontWeight="normal"
+            >
+              Cancelar
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
