@@ -10,6 +10,8 @@ import Sidebar from './components/layout/Sidebar.jsx';
 import MapPage from './pages/MapPage.jsx';
 import AcervoPage from './pages/AcervoPage.jsx'; 
 import PerfilPage from './pages/PerfilPage.jsx';
+import CadastroPage from './pages/CadastroPage.jsx';
+import LoginPage from './pages/LoginPage.jsx';
 function App() {
   return (
     <Router>
@@ -26,6 +28,8 @@ function App() {
             <Route path="/mapa" element={<MapPage />} />
             <Route path="/acervo" element={<AcervoPage />} />
             <Route path="/perfil" element={<PerfilPage />} />
+            <Route path="/cadastro" element={<CadastroPage />} />
+            <Route path="/login" element={<LoginPage />} />
           </Routes>
         </Flex>
         

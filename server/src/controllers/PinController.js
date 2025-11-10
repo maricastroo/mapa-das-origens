@@ -1,4 +1,4 @@
-// server/src/controllers/PinController.js
+
 const Pin = require('../models/Pin');
 const Usuario = require('../models/Usuario');
 const path = require('path');
