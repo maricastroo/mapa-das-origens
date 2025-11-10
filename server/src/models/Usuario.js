@@ -10,7 +10,7 @@ class Usuario extends Model {
         allowNull: false, //obrigatorio
         unique: true,//unico  
       },
-      userName: {
+      username: {
         type: DataTypes.STRING,
         allowNull: false, //obrigatorio
         unique: true,//unico
