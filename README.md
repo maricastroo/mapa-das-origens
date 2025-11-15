@@ -4,10 +4,10 @@ Projeto de mapa interativo e acervo digital para a cultura dos povos originário
 
 ---
 
-## Tecnologias
+## Tecnologias Utilizadas
 
-* **Frontend:** React, Chakra UI, React-Leaflet
-* **Backend:** Node.js, Express, Sequelize (MySQL)
+* **Frontend:** React, Chakra UI, React-Leaflet, Axios (para chamadas de API)
+* **Backend:** Node.js, Express, Sequelize (MySQL), BCrypt.js (para criptografia), JWT (para tokens)
 
 ---
 
@@ -15,20 +15,22 @@ Projeto de mapa interativo e acervo digital para a cultura dos povos originário
 
 ### FrontEnd
 
-* **--> client/src/App.js** Configuração das rotas do frontend
-* **--> client/src/index.css** A parte de estilização dos nomes do mapa estão lá
-* **--> client/src/components** Toda a parte relacionada a sidebar (ela é fixa)
-* **--> client/src/pages** Toda a parte relacionada as páginas (abas diferentes)
-* **--> client/src/assets** Toda a parte relacionada a mídia
+* **--> client/src/App.js** Configuração das rotas do frontend (com layout único e Sidebar)
+* **--> client/src/index.css** Estilização de classes globais (ex: `.map-label-hover`, `.city-label-permanent`)
+* **--> client/src/index.js** Ponto de entrada do React, envolve o App no `ChakraProvider` e `AuthProvider`.
+* **--> client/src/context/AuthContext.jsx** "Cérebro" global do app. Gerencia o login, logout, token e dados do usuário.
+* **--> client/src/components** Toda a parte relacionada a sidebar (ela é fixa e colapsável)
+* **--> client/src/pages** Páginas do app (MapPage, AcervoPage, PerfilPage, LoginPage, CadastroPage)
+* **--> client/src/assets** Mídias estáticas (logo, fundo de pergaminho)
 
 ###  BackEnd
 
-* **--> server/src/config/database.js** Fica a configuração do banco de dados (senha, user etc..)
-* **--> server/src/models** Fica as tabelas do banco 
-* **--> server/src/config/index.js** Le as configurações 
+* **--> server/src/config/database.js** Configuração do banco de dados (senha, user etc..)
+* **--> server/src/models** As "tabelas" do banco (Usuario.js, Pin.js, Acervo.js)
+* **--> server/src/config/index.js** Le as configurações (Não usado ativamente, mas parte da estrutura)
 * **--> server/src/config/multer.js** Configuração para o upload de mídias (PDF, JPEG...)
-* **--> server/src/controllers** Fica a lógica de negócio (o que fazer quando uma rota é chamada)
-* **--> server/src/routes.js** Define os 'endereços' da API (ex: /pins)
+* **--> server/src/controllers** Lógica de negócio (UsuarioController, PinController)
+* **--> server/src/routes.js** Define os 'endereços' da API (ex: /pins, /login, /cadastro)
 * **--> server/uploads** Onde as mídias (PDFs, JPEGs) são salvas.
 
 ---
