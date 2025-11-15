@@ -6,12 +6,15 @@ import reportWebVitals from './reportWebVitals';
 
 // chakra-ui para estilizacao
 import { ChakraProvider } from '@chakra-ui/react';
+import { AuthProvider } from './context/AuthContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <ChakraProvider>
-    <App />
-  </ChakraProvider>
+  <AuthProvider>
+    <ChakraProvider>
+      <App />
+    </ChakraProvider>
+  </AuthProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

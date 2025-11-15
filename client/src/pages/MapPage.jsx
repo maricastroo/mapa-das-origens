@@ -33,6 +33,9 @@ import Logo from '../assets/mapadasorigens.png';
 import ParchmentBg from '../assets/Acervo.png'; 
 import axios from 'axios'; // para design do mapa
 
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom'
+
 // corrige um bug comum onde os ícones do "pin" não aparecem.
 import L from 'leaflet';
 
@@ -63,6 +66,8 @@ const invisibleIcon = L.divIcon({
 });
 
 function MapPage() {
+  const {user, token} = useAuth();
+  const navigate = useNavigate();
   
   // Refs para os inputs de arquivo (para o botão bonito)
   const addFileRef = useRef(null);
@@ -99,7 +104,7 @@ function MapPage() {
     onClose: onEditClose
   } = useDisclosure();
   
-  // --- useDisclosure PARA O MODAL DE AJUDA ---
+  // useDisclosure PARA O MODAL DE AJUDA
   const { 
     isOpen: isHelpOpen, 
     onOpen: onHelpOpen, 
@@ -149,7 +154,8 @@ function MapPage() {
             descricao: pin.descricao,
             midiaNome: pin.midia,
             fileUrl: pin.midia ? `http://localhost:3000/files/${pin.midia}` : null,
-            fileType: pin.file_type 
+            fileType: pin.file_type,
+            userId: pin.UsuarioId
           };
         });
         setPins(pinsForState);
@@ -192,8 +198,14 @@ function MapPage() {
     // O "ouvinte" de clique (só na área do Paraná)
     layer.on('click', (e) => {
       L.DomEvent.stopPropagation(e); 
-      setNewPinLocation(e.latlng);
-      onAddOpen(); // abre o modal de adicionar
+      if (!user) {
+      alert("Você precisa estar logado para adicionar pins ao mapa.");
+      navigate('/login');
+      }else{
+        //se logado abre o modal
+        setNewPinLocation(e.latlng);
+        onAddOpen();
+      }
     });
   }  
   // Para centralizar o mapa
@@ -216,8 +228,11 @@ function MapPage() {
     formData.append('midia', midiaFile);
 
     try {
+      // enviar token de autenticacao
       const response = await axios.post('http://localhost:3000/pins', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' 
+        , 'Authorization': `Bearer ${token}`
+        }
       });
 
       const newPinFromDB = response.data;
@@ -230,7 +245,8 @@ function MapPage() {
         descricao: newPinFromDB.descricao,
         midiaNome: newPinFromDB.midia, 
         fileUrl: newPinFromDB.midia ? `http://localhost:3000/files/${newPinFromDB.midia}` : null,
-        fileType: newPinFromDB.file_type 
+        fileType: newPinFromDB.file_type,
+        userId: newPinFromDB.UsuarioId
       };
     
       setPins([...pins, newPinForState]);
@@ -243,7 +259,13 @@ function MapPage() {
 
     } catch (err) {
       console.error("Erro ao salvar o pin:", err);
+      // back envia 401 se nao estiver autorizado
+      if (err.response && err.response.status === 401) {
+        alert("Sua sessão expirou. Por favor, faça login novamente.");
+        navigate('/login');
+      }else{
       alert("Não foi possível salvar o pin. Tente novamente.");
+      }
     }
   };
 
@@ -274,7 +296,8 @@ function MapPage() {
       // enviar como 'multipart/form-data'
       const response = await axios.put(`http://localhost:3000/pins/${idToUpdate}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
         }
       });
       
@@ -290,7 +313,8 @@ function MapPage() {
             descricao: updatedPinFromDB.descricao,
             midiaNome: updatedPinFromDB.midia,
             fileUrl: updatedPinFromDB.midia ? `http://localhost:3000/files/${updatedPinFromDB.midia}` : null,
-            fileType: updatedPinFromDB.file_type
+            fileType: updatedPinFromDB.file_type,
+            userId: updatedPinFromDB.UsuarioId
           };
         }
         return p;
@@ -312,7 +336,11 @@ function MapPage() {
     }
     
     try {
-      await axios.delete(`http://localhost:3000/pins/${idToDelete}`);
+      await axios.delete(`http://localhost:3000/pins/${idToDelete}`,{
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setPins(pins.filter(pin => pin.id !== idToDelete));
       onDetailsClose(); 
     } catch (err) {
@@ -580,41 +608,44 @@ function MapPage() {
             </ModalBody>
 
             <ModalFooter display="flex" justifyContent="space-between">
-              
               <Box>
-                <Button 
-                  colorScheme="red" 
-                  mr={3} 
-                  onClick={handleDeletePin}
-                  borderRadius="full" 
-                  border="none"
-                  fontWeight="normal"
-                  _hover={{ bg: '#a31f1f' }} 
-                >
-                  Deletar
-                </Button>
-                
-                {/* botao editar */}
-                <Button 
-                  variant="outline" 
-                  borderColor="#3A5324" 
-                  borderRadius="full" 
-                  color="#3A5324"
-                  _hover={{ bg: '#213A14', color: 'white' }} 
-                  onClick={handleOpenEditModal}
-                  fontWeight="normal"
-                >
-                  Editar
-                </Button>
+                {user && user.id === selectedPin.userId && (
+                  <>
+                    <Button
+                      colorScheme="red"
+                      mr={3}
+                      onClick={handleDeletePin}
+                      borderRadius="full"
+                      border="none"
+                      fontWeight="normal"
+                      _hover={{ bg: '#a31f1f' }}
+                    >
+                      Deletar
+                    </Button>
+
+                    {/* botao editar */}
+                    <Button
+                      variant="outline"
+                      borderColor="#3A5324"
+                      borderRadius="full"
+                      color="#3A5324"
+                      _hover={{ bg: '#213A14', color: 'white' }}
+                      onClick={handleOpenEditModal}
+                      fontWeight="normal"
+                    >
+                      Editar
+                    </Button>
+                  </>
+                )}
               </Box>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={onDetailsClose}
                 color="#3A5324"
-                _hover={{ bg: '#213A14', color: 'white' }} 
-                borderRadius="full" 
-                borderColor="#3A5324" 
+                _hover={{ bg: '#213A14', color: 'white' }}
+                borderRadius="full"
+                borderColor="#3A5324"
                 fontWeight="normal"
               >
                 Fechar

@@ -1,5 +1,5 @@
 // src/pages/AcervoPage.jsx
-import React from 'react';
+import React, { use } from 'react';
 import {
   Flex,
   Box, 
@@ -19,11 +19,13 @@ import {
   Td,
   TableContainer,
 } from '@chakra-ui/react';
+import { useAuth } from '../context/AuthContext';
 import { SearchIcon } from '@chakra-ui/icons';
 import Logo from '../assets/origens.png'; 
 import ParchmentBg from '../assets/Acervo.png'; 
 
 function AcervoPage() {
+  const {user} = useAuth();
   // Cores do protótipo
   const searchBarBg = "#FFEFDC"; // cor navbar
   const tableHeaderBg = "#5D7541"; // verde da tabela
@@ -89,6 +91,7 @@ function AcervoPage() {
         </Heading>
 
         {/* botao de adicionar no acervo */}
+        {user && (
         <Button 
           bg={buttonBg}
           color="white"
@@ -102,6 +105,7 @@ function AcervoPage() {
         >
           Adicionar item ao acervo
         </Button>
+        )}
       </Flex>
 
 

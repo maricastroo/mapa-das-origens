@@ -1,6 +1,7 @@
-// server/src/controllers/UsuarioController.js
+// aqui o CRUD completo para o modelo Usuario
 const Usuario = require('../models/Usuario');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 module.exports = {
   
@@ -37,6 +38,46 @@ module.exports = {
     } catch (err) {
       console.error(err);
       return res.status(500).json({ error: 'Erro ao cadastrar usuário.' });
+    }
+  },
+
+  async login(req, res) {
+    try {
+      const { email, senha } = req.body;
+
+      if (!email || !senha) {
+        return res.status(400).json({ message: 'Email e senha são obrigatórios.' });
+      }
+
+      // Encontra o usuário pelo email
+      const usuario = await Usuario.findOne({ where: { email } });
+      if (!usuario) {
+        return res.status(401).json({ message: 'Credenciais inválidas.' });
+      }
+
+      // Compara a senha digitada com o hash salvo no banco (usando o campo 'password_hash')
+      const isMatch = await bcrypt.compare(senha, usuario.password_hash);
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Credenciais inválidas.' });
+      }
+
+      // Se deu certo, cria o token
+      const token = jwt.sign(
+        { id: usuario.id, email: usuario.email, username: usuario.username }, // Dados do token
+        process.env.JWT_SECRET || 'SEU_SEGREDO_SUPER_SECRETO', // (Mude isso para seu .env)
+        { expiresIn: '1h' } 
+      );
+
+      // Envia a resposta
+      return res.status(200).json({ 
+        message: 'Login bem-sucedido!',
+        token: token,
+        user: { id: usuario.id, nome: usuario.nome, email: usuario.email, username: usuario.username }
+      });
+
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Erro no servidor durante o login.' });
     }
   },
 

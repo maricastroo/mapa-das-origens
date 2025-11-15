@@ -22,6 +22,7 @@ routes.delete('/pins/:id', PinController.destroy); //deletar
 
 //CRUD COMPLETO PARA USUARIOS
 routes.post('/usuarios', UsuarioController.store); //criar
+routes.post('/login', UsuarioController.login);
 routes.get('/usuarios', UsuarioController.index); //listar todos
 routes.get('/usuarios/:id', UsuarioController.show); //mostrar so um
 routes.put('/usuarios/:id', UsuarioController.update); //atualizar
