@@ -3,24 +3,25 @@
 const { Model, DataTypes } = require('sequelize');
 
 class Acervo extends Model {
-    static init(sequelize) {
-        super.init({
-        nome: DataTypes.STRING,
-        povo: DataTypes.STRING,
-        tipo_de_arquivo: DataTypes.STRING,
-        fonte_referencia: DataTypes.TEXT, // text para textos maiores
-        data: DataTypes.DATEONLY, // apenas datas
-        }, {
-            sequelize,
-            tableName: 'acervos' // nome da tabela no banco
-        })
-    }
-    
-    //relacao entre tabelas = item do acervo pertece a um usuario
-    static associate(models) {
-        // relacao entre acervo e usuario (muitos para um)
-        this.belongsTo(models.Usuario, { foreignKey: 'enviado_por', as: 'autor' });
-    }
+  static init(sequelize) {
+    super.init({
+      // colunas tabela
+      nome: DataTypes.STRING,
+      povo: DataTypes.STRING,
+      tipo_arquivo: DataTypes.STRING,
+      fonte: DataTypes.STRING,      
+      // coolunas para o upload de mídia (do multer)
+      midia: DataTypes.STRING, // O nome do arquivo (ex: "documento.pdf")
+      file_type: DataTypes.STRING, // O mimetype (ex: "application/pdf")     
+    }, {
+      sequelize
+    });
+  }
+
+  // Define a relação: "Um item do Acervo pertence a um Usuário"
+  static associate(models) {
+    this.belongsTo(models.Usuario, { foreignKey: 'UsuarioId', as: 'usuario' });
+  }
 }
 
 module.exports = Acervo;

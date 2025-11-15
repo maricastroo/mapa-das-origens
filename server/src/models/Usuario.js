@@ -26,6 +26,7 @@ class Usuario extends Model {
   static associate(models) {
     // um mesmoi usuario pode ter muitos pins
     this.hasMany(models.Pin, { foreignKey: 'autor_id', as: 'pins' });
+    this.hasMany(models.Acervo, { foreignKey: 'UsuarioId', as: 'itens_acervo' });
   }
 
   // Remove campos sensíveis
