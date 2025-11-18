@@ -10,6 +10,8 @@ import AcervoPage from './pages/AcervoPage.jsx';
 import PerfilPage from './pages/PerfilPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import CadastroPage from './pages/CadastroPage.jsx';
+import FAQPage from './pages/FAQPage.jsx';
+import ConfigPage from './pages/ConfigPage.jsx';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
             <Route path="/perfil" element={<PerfilPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/cadastro" element={<CadastroPage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/config" element={<ConfigPage />} />
           </Routes>
         </Flex>
       </Flex>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'; 
 import { Flex, VStack, Link, IconButton, Divider, Spacer, Text } from '@chakra-ui/react';
-import { HamburgerIcon, SettingsIcon } from '@chakra-ui/icons';
+import { HamburgerIcon, SettingsIcon, QuestionOutlineIcon } from '@chakra-ui/icons';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 function Sidebar() {
@@ -13,22 +13,19 @@ function Sidebar() {
   const location = useLocation();
 
   // cores
-  const bgColor = "#FFEFDC";// fundo
-  const textColor = "#091106";// texto e icons
-  const activeBg = "#E9CEAE"; //cor de quando esta selecionado
-  const dividerColor = "#091106";// divisao
+  const bgColor = "#FFEFDC";
+  const textColor = "#091106";
+  const activeBg = "#E9CEAE"; 
+  const dividerColor = "#091106";
 
-  // aqui verifica se o link ativo
   const isActive = (path) => location.pathname === path;
 
   return (
     <Flex
       as="nav"
       direction="column"
-      
-      w={isCollapsed ? '82px' : '150px'} // 
+      w={isCollapsed ? '100px' : '150px'} 
       transition="width 0.2s ease-in-out"
-
       minH="100vh"
       bg={bgColor}
       color={textColor} 
@@ -36,21 +33,21 @@ function Sidebar() {
       align="center"
     >
       
-      {/* menu */}
+      {/* MENU */}
       <IconButton
         onClick={() => setIsCollapsed(!isCollapsed)} 
         aria-label="Menu"
         icon={<HamburgerIcon />}
-        fontSize="2xl"
-        color="white" // linhas
-        bg={textColor} // fundo
-        borderRadius="full"// botao em circulo
-        boxSize="50px" // tamanho fixo
+        fontSize="3xl"
+        color="white" 
+        bg="black"
+        borderRadius="full"
+        boxSize="60px" 
         _hover={{ bg: 'black' }} 
         mb={10}
       />
 
-      {/* links */}
+      {/* LINKS*/}
       <VStack 
         spacing={0} 
         align="stretch" 
@@ -58,22 +55,22 @@ function Sidebar() {
         display={isCollapsed ? 'none' : 'flex'} 
       >
         
-        {/* mapa*/}
+        {/* Mapa */}
         <Link 
           as={RouterLink}
           to="/mapa" 
           textAlign="center"
-          py={4} // espaco vertical
-          bg={isActive('/mapa') ? activeBg : 'transparent'} // fundo
+          py={4} 
+          bg={isActive('/mapa') ? activeBg : 'transparent'} 
           _hover={{ textDecor: 'none', bg: activeBg }}
         >
-          <Text fontSize="2xl" fontFamily="Belezza"> {/* fonte */}
+          <Text fontSize="2xl" fontFamily="Belezza"> 
             Mapa
           </Text>
         </Link>
         <Divider borderColor={dividerColor} /> 
         
-        {/* aceervo */}
+        {/* Acervo */}
         <Link 
           as={RouterLink}
           to="/acervo"
@@ -88,7 +85,7 @@ function Sidebar() {
         </Link>
         <Divider borderColor={dividerColor} /> 
 
-        {/* perfil */}
+        {/* Perfil */}
         <Link 
           as={RouterLink}
           to="/perfil"
@@ -104,17 +101,37 @@ function Sidebar() {
         <Divider borderColor={dividerColor} /> 
 
       </VStack>
-
-      {/* logo de configs */}
+      
+{/* ÍCONE DE CONFIGURAÇÕES */}
       <IconButton
+        as={RouterLink}
+        to="/config"
         display={isCollapsed ? 'none' : 'block'}
         aria-label="Configurações"
         icon={<SettingsIcon />}
-        fontSize="3xl" //tamanho do icon
-        variant="ghost" // sem fundo
-        color={textColor}
+        fontSize="4xl" 
+        variant="ghost" 
+        color="black" 
         _hover={{ bg: 'blackAlpha.100' }}
+        mt={4} 
       />
+      {/* empurra o FAQ para o final da página */}
+      <Spacer />
+
+      {/* 5. ÍCONE DE FAQ */}
+      <IconButton
+        as={RouterLink} 
+        to="/faq" 
+        aria-label="Ajuda"
+        display={isCollapsed ? 'none' : 'block'} 
+        icon={<QuestionOutlineIcon />} 
+        fontSize="4xl" 
+        variant="ghost" 
+        color="black"
+        _hover={{ bg: 'blackAlpha.100' }}
+        mb={4} 
+      />
+
     </Flex>
   );
 }
